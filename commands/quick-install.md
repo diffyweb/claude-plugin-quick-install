@@ -21,13 +21,13 @@ Extract `owner/repo` from the arguments. If a full URL is given, strip the `http
 
 ### 2. Fetch plugin names from the marketplace manifest
 
-Run this to get the list of plugin names from the repo's marketplace manifest:
-
 ```bash
-gh api "repos/$OWNER_REPO/contents/.claude-plugin/marketplace.json" --jq '.content' | base64 -d | python3 -c "import sys,json; [print(p['name']) for p in json.load(sys.stdin)['plugins']]"
+curl -sL "https://raw.githubusercontent.com/$OWNER_REPO/main/.claude-plugin/marketplace.json" | python3 -c "import sys,json; [print(p['name']) for p in json.load(sys.stdin)['plugins']]"
 ```
 
-If this fails (no `.claude-plugin/marketplace.json` in the repo), tell the user:
+If this fails, try `HEAD` or `master` as the branch instead of `main`.
+
+If all fail (no `.claude-plugin/marketplace.json` in the repo), tell the user:
 > "This repo doesn't have a `.claude-plugin/marketplace.json` manifest. It needs one to be installable as a Claude Code plugin. See https://code.claude.com/docs/en/plugin-marketplaces for the required format."
 
 Stop here if it fails.
