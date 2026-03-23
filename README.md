@@ -19,10 +19,15 @@ You need to know the marketplace naming convention and the plugin name inside th
 
 ## Install
 
+```bash
+mkdir -p ~/.claude/skills/quick-install
+curl -sf https://raw.githubusercontent.com/michaelcarwile/claude-skill-quick-install/main/skills/quick-install/SKILL.md \
+  -o ~/.claude/skills/quick-install/SKILL.md
 ```
-/plugin marketplace add diffyweb/claude-plugins
-/plugin install quick-install@diffyweb-claude-plugins
-```
+
+Restart Claude Code. The `/quick-install` command is now available globally — no marketplace setup needed.
+
+> This is a standalone skill, not a plugin. The whole point of quick-install is to avoid the marketplace bootstrap dance, so it would be self-defeating to require one to install it.
 
 ## Usage
 
@@ -31,17 +36,21 @@ You need to know the marketplace naming convention and the plugin name inside th
 /quick-install https://github.com/owner/repo
 ```
 
-The command fetches the plugin's marketplace manifest from GitHub, adds the repo as a marketplace, and installs the plugin — all in one step.
+The command fetches the plugin's marketplace manifest from GitHub, adds it as a local marketplace entry, and installs the plugin — all in one step.
 
 ## How It Works
 
 1. Parses the GitHub `owner/repo` from the input
-2. Fetches `.claude-plugin/marketplace.json` via `gh api` to get plugin name(s)
-3. Runs `claude plugin marketplace add owner/repo`
-4. Runs `claude plugin install plugin-name@derived-marketplace-name`
-5. Prompts you to `/reload-plugins`
+2. Fetches `.claude-plugin/marketplace.json` via raw GitHub URL (falls back to `gh api` for private repos)
+3. Creates a local `quick-install` marketplace at `~/.claude/quick-install-marketplace/` (first run only)
+4. Adds the plugin entry to the local marketplace manifest
+5. Runs `claude plugin marketplace update quick-install` and `claude plugin install plugin-name@quick-install`
+6. Prompts you to `/reload-plugins`
+
+Plugins installed this way appear as `plugin-name@quick-install` in your plugin registry.
 
 ## Requirements
 
-- [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated
 - The target repo must have a `.claude-plugin/marketplace.json`
+- For private repos: [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated
+- Public repos work with just `curl` (no `gh` needed)
