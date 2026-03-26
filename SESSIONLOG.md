@@ -17,7 +17,7 @@ Newest first. Update at the end of every session.
 - Built SESSIONLOG.md, CHANGELOG.md, and AGENTS.md following the bokteachings/gdrive-kb-mcp pattern
 
 ### Current state
-- Uncommitted changes: SKILL.md fix, README update, 3 new files (CHANGELOG, SESSIONLOG, AGENTS.md + CLAUDE.md symlink)
+- All changes committed and pushed: `d0d8457` (fix), `e0f1c36` (docs)
 - Installed copy at `~/.claude/skills/quick-install/SKILL.md` is updated and matches source
 - Not yet tested end-to-end with `/quick-install`
 
