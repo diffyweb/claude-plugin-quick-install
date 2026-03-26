@@ -9,7 +9,7 @@ A standalone Claude Code skill (`/quick-install`) that installs plugins and skil
 ## Project Structure
 
 ```
-skills/quick-install/SKILL.md   # The skill itself (all logic lives here)
+SKILL.md                        # The skill itself (all logic lives here)
 README.md                       # Install instructions + usage
 CHANGELOG.md                    # Commit-level changelog with hashes
 SESSIONLOG.md                   # Session handoff log (see Session Continuity below)
@@ -36,7 +36,7 @@ Three tiers of repo detection:
 
 This is a skill-as-code project — all logic is in the SKILL.md markdown file that Claude interprets at runtime. There's no build step, no tests, no dependencies.
 
-To test changes: edit `skills/quick-install/SKILL.md`, copy to `~/.claude/skills/quick-install/SKILL.md`, and run `/quick-install` in a Claude Code session.
+To test changes: edit `SKILL.md` and run `/quick-install` in a Claude Code session. If installed via `git clone`, the file is already in the right place.
 
 ## Session Continuity
 

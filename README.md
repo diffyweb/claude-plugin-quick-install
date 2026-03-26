@@ -29,7 +29,7 @@ Or grab the file directly:
 
 ```bash
 mkdir -p ~/.claude/skills/quick-install
-curl -sf https://raw.githubusercontent.com/michaelcarwile/claude-skill-quick-install/main/skills/quick-install/SKILL.md \
+curl -sf https://raw.githubusercontent.com/michaelcarwile/claude-skill-quick-install/main/SKILL.md \
   -o ~/.claude/skills/quick-install/SKILL.md
 ```
 
