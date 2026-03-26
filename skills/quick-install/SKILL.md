@@ -27,11 +27,10 @@ Extract `owner/repo` from the arguments. If a full URL is given, strip the `http
 Try `curl` first (works for public repos, no dependencies):
 
 ```bash
-curl -sf "https://raw.githubusercontent.com/$OWNER_REPO/main/.claude-plugin/marketplace.json" | python3 -c "
+curl -sf "https://raw.githubusercontent.com/$OWNER_REPO/main/.claude-plugin/plugin.json" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
-for p in data['plugins']:
-    print(json.dumps({'name': p['name'], 'description': p.get('description', ''), 'version': p.get('version', '1.0.0')}))
+print(json.dumps({'name': data['name'], 'description': data.get('description', ''), 'version': data.get('version', '1.0.0')}))
 "
 ```
 
@@ -40,19 +39,55 @@ If curl returns a 404, try `master` or `HEAD` as the branch instead of `main`.
 If curl fails on all branches, the repo may be private. Fall back to `gh` (requires GitHub CLI with auth):
 
 ```bash
-gh api "repos/$OWNER_REPO/contents/.claude-plugin/marketplace.json" --jq '.content' | base64 -d | python3 -c "
+gh api "repos/$OWNER_REPO/contents/.claude-plugin/plugin.json" --jq '.content' | base64 -d | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
-for p in data['plugins']:
-    print(json.dumps({'name': p['name'], 'description': p.get('description', ''), 'version': p.get('version', '1.0.0')}))
+print(json.dumps({'name': data['name'], 'description': data.get('description', ''), 'version': data.get('version', '1.0.0')}))
 "
 ```
 
 If `gh` is not installed, tell the user:
 > "This repo appears to be private. Install the GitHub CLI (`gh`) and authenticate with `gh auth login` to install private plugins."
 
-If all methods fail, tell the user:
-> "This repo doesn't have a `.claude-plugin/marketplace.json` manifest. It needs one to be installable as a Claude Code plugin. See https://code.claude.com/docs/en/plugin-marketplaces for the required format."
+If all methods fail, this repo may be a standalone skill instead of a plugin. Proceed to **Step 2b**.
+
+### 2b. Check for standalone skill repos (no `.claude-plugin/` directory)
+
+If step 2 found no `plugin.json`, check whether the repo contains skills directly.
+
+Fetch the repo tree:
+
+```bash
+curl -sf "https://api.github.com/repos/$OWNER_REPO/git/trees/main?recursive=1" | python3 -c "
+import sys, json
+tree = json.load(sys.stdin).get('tree', [])
+skills = [e['path'] for e in tree if e['path'].endswith('/SKILL.md') and e['path'].startswith('skills/')]
+for s in skills:
+    print(s)
+"
+```
+
+If no skills found, try `master` branch. If still nothing, fall back to `gh api` for private repos.
+
+If skill paths are found (e.g., `skills/my-skill/SKILL.md`):
+
+1. For each skill, extract the skill directory name (e.g., `my-skill` from `skills/my-skill/SKILL.md`)
+2. Download the skill directory to `~/.claude/skills/<skill-name>/`:
+
+```bash
+# For each skill path found:
+mkdir -p ~/.claude/skills/$SKILL_NAME
+curl -sf "https://raw.githubusercontent.com/$OWNER_REPO/main/$SKILL_PATH" \
+  -o ~/.claude/skills/$SKILL_NAME/SKILL.md
+```
+
+3. Tell the user:
+> "Installed `<skill-name>` as a standalone skill at `~/.claude/skills/<skill-name>/`. Restart Claude Code or start a new session to activate it."
+
+**Stop here** — standalone skills don't use the marketplace flow, so skip steps 3-6.
+
+If no `plugin.json` AND no `skills/*/SKILL.md` found, tell the user:
+> "This repo doesn't have `.claude-plugin/plugin.json` or a `skills/` directory. It can't be installed as a Claude Code plugin or skill."
 
 Stop here if it fails.
 
